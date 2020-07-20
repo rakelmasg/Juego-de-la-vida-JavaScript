@@ -1,0 +1,131 @@
+/* 
+*	Fecha creación: 28/11/2015
+*	Autor: Raquel Más
+*/
+/*importamos una fuente personalizada de google fonts para el titulo*/
+@import url(https://fonts.googleapis.com/css?family=VT323);
+
+/*cuerpo: color de fondo, tipo de fuente*/
+body{
+	background: black;
+	font-family: arial;
+}
+
+/*título principal: margen interno, tamaño fuente, color texto, tipo de fuente*/
+h1{  
+	padding: 5px;
+	font-size: 45px;
+	color: #00FF00;
+	font-family:VT323;
+}
+
+/*cabecera y pie: alineamiento del texto*/
+header, footer{
+	text-align:center;
+}
+
+/*menú de botones: pegado a la izquierda*/
+nav{
+	float:left;
+
+}
+
+/*pie de página: margen superior, borde, margenes internos, color de fondo, tamaño fuente, grosor fuente, color texto*/
+footer{
+	margin-top:20px;
+	border:1px solid;
+	padding: 8px;
+	background-color: #00FF00;
+	font-size:14px;
+	font-weight:bold;
+	color:black;
+}
+
+/*canvas tablero: margen inferior, borde*/
+canvas{
+	border: 2px solid #FFFFFF;
+	margin-bottom:5px;
+}
+
+/*botones: modo de pintado, margen inferior y derecho, ancho, alto, color de fondo, grosor fuente, tamaño fuente*/
+button{
+	display:block;
+	margin-bottom:5px;
+	margin-right:10px;
+	width:30px;
+	height:26px;
+	background-color: #C0C0C0;
+	font-weight:bold;
+	font-size:14px;	
+
+}
+
+/*botones cuando se hace focus: color texto, color fondo*/
+button:focus{
+	color: #00FF00;
+	background-color: #D3D3D3;
+}
+
+/*botones cuando el cursor está encima:color fondo*/
+button:hover{
+	background-color: #E6E6FA;
+}
+
+/*botón pausa y botón de ejecutar un turno: tamaño fuente*/
+#pauseB, #playOneB{
+	font-size:10px;	
+}
+
+/*botón stop: tamaño fuente, margen inferior*/
+#stopB{
+	font-size:16px;	
+	margin-bottom:20px;
+}
+
+/*botón ayuda: margen superior*/
+#ayudaB{
+	margin-top:20px;
+}
+
+/*información de la célula: visibilidad, posición, márgenes internos, color de fondo, borde, color texto, tamaño fuente*/
+#info{
+	visibility:hidden;
+	position:fixed;
+	padding:6px;
+	background-color: #E6E6FA;
+	border: 1px grey solid;
+	border-radius: 15px 15px 15px 15px;
+	-moz-border-radius: 15px 15px 15px 15px;
+	-webkit-border-radius: 15px 15px 15px 15px;
+	color:black;
+	font-size:12px;
+}
+
+/*texto del estado 'viva' de la célula: color texto*/
+#viva{
+	color: green;
+}
+
+/*texto del estado 'muerta' de la célula: color texto*/
+#muerta{
+	color: red;
+}
+
+/*número de turno del tablero: pegado a la derecha, color texto, grosor fuente*/
+#turno{
+	float: right;
+	color: #FFFFFF;
+	font-weight: bold;
+}
+
+/*texto de ayuda: ancho, márgenes internos, color texto, tamaño fuente*/
+#sAyuda{
+	width:280px;
+	padding:10px;
+	color: #A4A4A4;
+	font-size: 14px;
+}
+
+
+
+

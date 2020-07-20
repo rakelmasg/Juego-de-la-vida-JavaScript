@@ -1,0 +1,207 @@
+<!-- 
+	Fecha creación: 28/11/2015 
+	Autor: Raquel Más
+-->
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Pr&aacute;ctica 2: Juego de la vida</title>
+		<!-- añadimos un icono para la pestaña-->
+		<link rel="icon" type="image/gif" href="./img/favicon.gif">
+		<!-- incluimos las hojas de estilo-->
+		<link rel="stylesheet" href="css/reset.css" />
+		<link rel="stylesheet" href="css/theme.css" />
+		<!-- incluimos los scripts de javascript -->
+		<script src='.\js\celula.js'></script>
+		<script src='.\js\mundo.js'></script>		
+		<script>
+			//asignamos al evento de carga la función para inicializar el juego
+			window.onload = inicializar;
+			
+			//variables axiliares 
+			var botonPlay;
+			var botonPause;
+			var idInfo;
+			var cnv;
+			var mundo1;
+			
+			//ids de los temporizadores
+			var intervalo=false;
+			var intervaloT;
+			
+			function inicializar(){
+				//seleccionamos los elementos html
+				botonPlay = document.getElementById('playB');
+				botonPause = document.getElementById('pauseB');
+				cnv = document.getElementsByTagName('canvas')[0];
+				idInfo = document.getElementById("info");	
+				
+				escalar();//ajusta el contenido según el tamaño de la ventana
+				mundo1 = new Mundo(cnv);  //creamos un objeto de tipo mundo
+				mundo1.init(10); //creamos el tablero de 10x10
+				
+				//añadimos los escuchadores al canvas
+				cnv.addEventListener("click",toggle,true);
+				cnv.addEventListener("mouseover",getInfo,true);
+				cnv.addEventListener("mousemove",getInfo,true);
+				cnv.addEventListener("mouseleave",closeInfo,true);
+			}
+			function escalar(){	
+				//calculamos el margen del nav para que le canvas quede centrado
+				var margen_lateral=(window.innerWidth-cnv.width-40*2)/2; //restamos tamaño del canvas y del nav*2
+				//asignamos a los elementos sus margenes
+				document.getElementsByTagName('nav')[0].style.marginLeft= margen_lateral+"px";
+				document.getElementById('sAyuda').style.marginLeft= (margen_lateral+28)+"px"; 		
+				document.getElementById('turno').style.marginRight= (margen_lateral+32)+"px";				
+			}
+			
+			function play(){ //ejecuta turnos en el mundo hasta que se pausa
+				if(intervalo==false){ //si el juego no se esta ejecutando
+					closeInfo(); //cerramos la información de la célula si está abierta
+					intervalo=window.setInterval(mundo1.turno, 100); //iniciamos el intervalo que controla los turnos del mundo
+					intervaloT=window.setInterval(getTurno, 100);	//iniciamos el intervalo que muestra el nº de turno del mundo
+					botonPause.focus();
+				}
+			}
+			
+			function playOne(){ //ejecuta un único turno en el mundo 
+				if(intervalo==false){ //si el juego no se esta ejecutando
+					mundo1.turno(); //ejecutamos un turno
+					getTurno(); //actualizamos el nº de turno
+				}
+			}
+			
+			function pause(){ //pausa la ejecución de los turnos del mundo
+				clearInterval(intervalo); //para el intervalo que controla los turnos
+				clearInterval(intervaloT); //para el intevalo que muestra el nº de turno actual
+				intervalo=false; //indicamos que el juego esta pausado, no se está ejecutando
+				botonPlay.focus();
+			}
+			
+			function stop(){ //para la ejecución de los turnos reiniciando el mundo
+				clearInterval(intervalo); //para el intervalo que controla los turnos
+				clearInterval(intervaloT); //para el intevalo que muestra el nº de turno actual
+				intervalo=false; //indicamos que el juego esta pausado, no se está ejecutando
+				mundo1.init(mundo1.getNumCelulas());
+				getTurno(); //actulizamos los turnos
+				botonPlay.focus();
+			}
+			
+			function toggle(e){ //activa o desactiva la célula pulsada en el tablero
+				if(intervalo==false){ //si el juego no se esta ejecutando
+					var v=mundo1.toggleCelula(e.clientX,e.clientY); //recuperamos el estado de la célula pulsada
+					if(v){ //si está viva
+						document.getElementById('act').play(); //reproducimos el sonido de activar
+					}else{
+						document.getElementById('des').play(); //reproducimos el sonido de desactivar
+					}	
+					getInfo(e,v); //pintamos en pantalla la información de la célula en la que se situa el cursor
+					botonPlay.focus();
+					
+				}else{ //si se esta ejecutando el juego
+					alert("Pause la ejecución \(Enter\) para ACTIVAR/DESACTIVAR células."); //sugerimos al usuario que lo pause
+					botonPause.focus();
+				}
+			}
+
+			function getInfo(e,v){ //muestra la información de la célula en pantalla
+				if(intervalo==false){ //si el juego no se está ejecutando
+					mundo1.renderCelulaOver(e.clientX,e.clientY); //marcamos la célula sobre la que está el cursor para que se diferencie
+					idInfo.style.visibility="visible"; //pintamos el elemento html donde colocaremos la información
+					if(v==undefined){ //si no recibe el estado de una célula
+						idInfo.innerHTML=mundo1.getInfoCelula(e.clientX,e.clientY); //muestra la información de la célula donde tenemos el cursor
+					}else if(v==true) { //si recibe el estado 'viva' (sólo en caso de que se haya pulsado sobre ella estando muerta)
+						idInfo.innerHTML="Estado: <span id='viva'>VIVA</span><br>Turno/s viva: 1"; //escribimos esta información inicial
+					}else{  //si recibe el estado 'viva' (sólo en caso de que se haya pulsado sobre ella estando viva)
+						idInfo.innerHTML="Estado: <span id='muerta'>MUERTA</span><br>Turno/s viva:0"; //escribimos esta información inicial
+					}
+					//situamos el elemento html al lado del cursor
+					idInfo.style.left=e.clientX+5+"px";
+					idInfo.style.top=e.clientY+5+"px";
+				}
+			}
+			
+	
+			function closeInfo(e){ //deja de pintar la información de la célula y desmarca la última que ha tenido el cursor encima
+				if(intervalo==false){ //si está parado el juego
+					mundo1.unRenderLastOver(); //desmarcamos la última célula sobre la que ha estado el cursor antes de salir del tablero
+					idInfo.style.visibility="hidden"; //ocultamos el div con la información
+				}
+			}
+			function cambiarNCelulas(operacion){ //aumenta o disminuye la longitud de células del tablero
+				var correcto; //almacena si se ha realizado correctamente la acción
+				if(intervalo==false){ //si está parado el juego
+					correcto=mundo1.cambiarNumCelulas(operacion); //realizamos el cambio de longitud
+					if(!correcto){ //si no se ha podido realizar
+						if(operacion=='+'){ //si se quiere aumentar
+							alert('Se ha alcanzado el número MÁXIMO de células.');
+						}else{ //si se quiere disminuir
+							alert('Se ha alcanzado el número MÍNIMO de células.');
+						}
+					} else{  //si se ha cambiado la longitud
+						getTurno(); //actulizamos los turnos
+					}
+					botonPlay.focus();
+				}else{ //si es está ejecutando el juego
+					alert("Pause la ejecución \(Enter\) para CAMBIAR el número de células."); //sugerimos al usuario que lo pause
+					botonPause.focus();
+				}
+			}
+			
+			function getTurno(){ //recupera y pinta el nº de turno del mundo
+				document.getElementById('turno').innerHTML="Turno: "+mundo1.getNumTurno();
+			}
+			
+			function getAyuda(){ //ayuda para el usuario sobre el funcionamiento de la aplicación
+				alert("Para EJECUTAR UN TURNO pulse el botón ►|. \n"+
+					"Para EJECUTAR el juego pulse el botón ►. \(Enter\)\n"+
+					"Para PAUSAR el juego pulse el botón | |. \(Enter\)\n"+
+					"Para PARAR el juego pulse el botón ■. \n"+
+					"Para CAMBIAR número de células pulse los botones - y +.\n"+
+					"Para ACTIVAR/DESACTIVAR células pulse sobre la casilla deseada en el tablero.\n"+
+					"Para ver INFORMACIÓN sobre las células colocar el cursor sobre ellas.");
+				botonPlay.focus();
+			}
+		</script>  		
+	</head>
+	<!-- asignamos la funcion escalar al evento resize para que no pierda las proporciones-->
+	<body onresize='escalar()'>
+		<header>
+			<h1>JUEGO DE LA VIDA</h1> 
+		</header>
+			<nav>
+				<!-- asignamos a cada boton la función que debe realizar al ser pulsado-->
+				<button type='button' id='playOneB' title='Ejecutar un turno' onclick='playOne()'>►&#124;</button>
+				<button type='button' id='playB' title='Ejecutar' onclick='play()' autofocus>►</button>
+				<button type='button' id='pauseB' title='Pausar' onclick='pause()'>&#124;&#124;</button>
+				<button type='button' id='stopB' title='Parar' onclick='stop()'>■</button>
+				<button type='button' title='Aumentar número de células' onclick='cambiarNCelulas("+")'>+</button>
+				<button type='button' title='Disminuir número de células' onclick='cambiarNCelulas("-")'>-</button>
+				<button type='button' id='ayudaB' title='Ayuda' onclick='getAyuda()'>&#63;</button>
+			</nav>
+			<!-- contexto gráfico del mundo-->
+			<canvas width='499'	height='499'></canvas>
+			<!-- información de la célula-->
+			<div id="info"></div>
+			<!-- parrafo de información-->
+			<span id="sAyuda">Pulse el bot&oacute;n &#63; para abrir la ayuda.</span>
+			<!-- nº del turno actual del mundo-->
+			<span id='turno'>Turno: 1</span>
+		<footer>&#169; 2015 Raquel M&aacute;s Garc&iacute;a</footer>
+
+		<!-- sonido de activar una célula en diferentes formatos-->
+		<audio id="act">
+			<source src='.\audio\activar.ogg'></source>
+			<source src='.\audio\activar.wav'></source>
+			<source src='.\audio\activar.mp3'></source>
+		</audio>
+		<!-- sonido de desactivar una célula en diferentes formatos-->
+		<audio id="des">
+			<source src='.\audio\desactivar.ogg'></source>
+			<source src='.\audio\desactivar.wav'></source>
+			<source src='.\audio\desactivar.mp3'></source>
+		</audio>
+		
+	</body>
+</html>
